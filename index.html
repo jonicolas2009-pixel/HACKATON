@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>La aventura de las listas</title>
+        <style>
+          @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap");
+
+          :root {
+            --navy: #102b35;
+            --panel: #173e49;
+            --gold: #ffd166;
+            --mint: #8de0b3;
+            --red: #ff8b82;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            background: radial-gradient(circle at 20% 0%, #24505a, #102b35 55%);
+            color: #f5f7ee;
+            font-family: Nunito, system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+          }
+
+          main {
+            max-width: 1180px;
+            margin: auto;
+          }
+
+          header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+          }
+
+          h1 {
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            line-height: 1;
+            margin: 0;
+            color: var(--gold);
+          }
+
+          .subtitle {
+            margin: 7px 0 0;
+            color: #c4d9d8;
+          }
+
+          .pillbar {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+          }
+
+          .pill {
+            background: #1a4651;
+            border: 1px solid #39717a;
+            border-radius: 14px;
+            padding: 9px 13px;
+            font-weight: 800;
+          }
+
+          .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(290px, 0.9fr);
+            gap: 16px;
+          }
+
+          .panel {
+            background: linear-gradient(145deg, #19444f, #143640);
+            border: 1px solid #32616a;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 14px 35px #061a2080;
+          }
+
+          .gamehead {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+
+          .gamehead h2,
+          .panel h2 {
+            margin: 0;
+            font-size: 1.18rem;
+          }
+          .hint {
+            font-size: 0.86rem;
+            color: #c4d9d8;
+          }
+
+          canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 800/500;
+            border-radius: 14px;
+            border: 3px solid #4b7a70;
+            background: #8cbd83;
+            image-rendering: pixelated;
+            touch-action: none;
+          }
+
+          .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 11px;
+          }
+
+          .keys {
+            color: #c6dcda;
+            font-size: 0.86rem;
+          }
+
+          .action {
+            background: var(--gold);
+            color: #27333a;
+            border: 0;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+          }
+
+          .action.secondary {
+            background: #28616c;
+            color: white;
+            border: 1px solid #4b8790;
+          }
+
+          .action:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+          }
+
+          .side {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+          }
+
+          .mission {
+            background: #12313a;
+            border-radius: 14px;
+            padding: 13px;
+            margin: 10px 0;
+          }
+
+          .mission strong {
+            color: var(--gold);
+          }
+          .mission p {
+            margin: 5px 0 0;
+            color: #d5e5df;
+          }
+
+          .slots {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 7px;
+            margin: 12px 0;
+          }
+
+          .slot {
+            min-width: 0;
+            aspect-ratio: 1;
+            border: 2px dashed #54818a;
+            border-radius: 12px;
+            background: #102e37;
+            color: white;
+            display: grid;
+            place-items: center;
+            align-content: center;
+            cursor: pointer;
+            font: inherit;
+            padding: 3px;
+          }
+
+          .slot.selected {
+            border: 2px solid var(--gold);
+            background: #28535b;
+          }
+
+          .slot .emoji {
+            font-size: 1.55rem;
+          }
+          .slot small {
+            font-size: 0.65rem;
+            overflow-wrap: anywhere;
+          }
+          .slot.empty {
+            color: #8baeb0;
+          }
+
+          .status {
+            min-height: 48px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #102f38;
+            color: #dcebe4;
+            margin: 10px 0;
+          }
+
+          .status.good {
+            color: var(--mint);
+          }
+          .status.bad {
+            color: var(--red);
+          }
+
+          .code {
+            background: #0c252d;
+            border-radius: 12px;
+            padding: 10px;
+            color: #c7e8d8;
+            font:
+              0.83rem ui-monospace,
+              monospace;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+          }
+
+          .progress {
+            height: 8px;
+            background: #0d2b33;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 9px;
+          }
+
+          .progress span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #80d7a7, #ffd166);
+            width: 0;
+            transition: width 0.3s;
+          }
+
+          .touch {
+            display: none;
+            grid-template-columns: repeat(3, 48px);
+            grid-template-rows: repeat(2, 42px);
+            gap: 5px;
+          }
+
+          .touch button {
+            border: 1px solid #54818a;
+            border-radius: 9px;
+            background: #1b4c57;
+            color: white;
+            font-size: 1.1rem;
+            touch-action: none;
+          }
+
+          .touch .up {
+            grid-column: 2;
+          }
+          .touch .left {
+            grid-column: 1;
+            grid-row: 2;
+          }
+          .touch .down {
+            grid-column: 2;
+            grid-row: 2;
+          }
+          .touch .right {
+            grid-column: 3;
+            grid-row: 2;
+          }
+
+          .overlay {
+            position: fixed;
+            inset: 0;
+            background: #061b20dd;
+            display: none;
+            place-items: center;
+            padding: 20px;
+            z-index: 5;
+          }
+
+          .overlay.show {
+            display: grid;
+          }
+
+          .modal {
+            max-width: 440px;
+            width: 100%;
+            background: #19444f;
+            border: 1px solid #54818a;
+            border-radius: 22px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 20px 70px #0009;
+          }
+
+          .modal h2 {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin: 0 0 8px;
+          }
+          .modal p {
+            color: #d5e5df;
+          }
+
+          footer {
+            text-align: center;
+            color: #a9c4c2;
+            font-size: 0.8rem;
+            margin: 16px 0;
+          }
+
+          @media (max-width: 850px) {
+            .layout {
+              grid-template-columns: 1fr;
+            }
+            .side {
+              grid-template-columns: 1fr 1fr;
+            }
+            .side .wide {
+              grid-column: 1/-1;
+            }
+          }
+
+          @media (max-width: 560px) {
+            body {
+              padding: 10px;
+            }
+            .side {
+              grid-template-columns: 1fr;
+            }
+            .side .wide {
+              grid-column: auto;
+            }
+            .touch {
+              display: grid;
+            }
+            .keys {
+              max-width: 220px;
+            }
+            .panel {
+              padding: 12px;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <main>
+          <header>
+            <div>
+              <h1>🧭 La aventura de las listas</h1>
+              <p class="subtitle">
+                Explora, recoge objetos y resuelve misiones usando tu
+                inventario.
+              </p>
+            </div>
+
+            <div class="pillbar">
+              <div class="pill" id="missionCount">MISIÓN 1/5</div>
+              <div class="pill" id="lifeCount">❤️❤️❤️</div>
+              <div class="pill" id="scoreCount">⭐ 0 puntos</div>
+            </div>
+          </header>
+
+          <div class="layout">
+            <section class="panel">
+              <div class="gamehead">
+                <h2 id="sceneTitle">El bosque del puente</h2>
+                <span class="hint">🌳 Bosque antiguo</span>
+              </div>
+
+              <canvas
+                id="game"
+                width="800"
+                height="500"
+                aria-label="Mapa del videojuego"
+              ></canvas>
+
+              <div class="controls">
+                <div>
+                  <div class="keys">
+                    Mover: <b>W A S D</b> o flechas · Recoger: <b>E</b> · Usar:
+                    <b>Espacio</b>
+                  </div>
+                  <div class="hint" id="nearby">
+                    Explora el mapa y acércate a un objeto.
+                  </div>
+                </div>
+
+                <button class="action" id="interact">Recoger objeto (E)</button>
+              </div>
+
+              <div class="controls">
+                <div class="touch">
+                  <button class="up" data-key="ArrowUp">▲</button>
+                  <button class="left" data-key="ArrowLeft">◀</button>
+                  <button class="down" data-key="ArrowDown">▼</button>
+                  <button class="right" data-key="ArrowRight">▶</button>
+                </div>
+
+                <button class="action secondary" id="useQuick">
+                  Usar seleccionado (Espacio)
+                </button>
+              </div>
+            </section>
+
+            <aside class="side">
+              <section class="panel">
+                <h2>📜 Misión actual</h2>
+
+                <div class="mission">
+                  <strong id="missionName">El puente roto</strong>
+                  <p id="missionText"></p>
+                </div>
+
+                <div class="hint" id="objective">
+                  Objetivo: consigue los materiales.
+                </div>
+                <div class="progress"><span id="progressBar"></span></div>
+              </section>
+
+              <section class="panel">
+                <h2>
+                  🎒 Mochila <span class="hint" id="capacity">(0/5)</span>
+                </h2>
+
+                <div class="slots" id="slots"></div>
+
+                <div class="controls">
+                  <button class="action secondary" id="drop">
+                    Soltar objeto
+                  </button>
+                  <button class="action" id="use">Usar objeto</button>
+                </div>
+
+                <p class="hint">
+                  Selecciona un espacio de la mochila para usar o soltar un
+                  objeto.
+                </p>
+              </section>
+
+              <section class="panel wide">
+                <h2>💬 Aventura</h2>
+                <div class="status" id="message" aria-live="polite">
+                  ¡Bienvenido! Muévete por el bosque y busca los objetos.
+                </div>
+                <div class="code" id="code">inventario = []</div>
+              </section>
+            </aside>
+          </div>
+
+          <footer>
+            Consejo: los objetos aparecen en el mapa. Acércate lo suficiente y
+            pulsa E para guardarlos en tu lista.
+          </footer>
+        </main>
+
+        <div class="overlay" id="overlay">
+          <div class="modal">
+            <h2 id="modalTitle">¡Misión superada!</h2>
+            <p id="modalText"></p>
+            <button class="action" id="continue">Continuar</button>
+          </div>
+        </div>
+
+        <script>
+          (() => {
+            const canvas = document.getElementById("game");
+            const ctx = canvas.getContext("2d");
+            const $ = (id) => document.getElementById(id);
+
+            const W = 800;
+            const H = 500;
+            const MAX = 5;
+
+            const ITEMS = {
+              madera: ["🪵", "Madera"],
+              cuerda: ["🪢", "Cuerda"],
+              piedra: ["🪨", "Piedra"],
+              hongo: ["🍄", "Hongo"],
+              llave: ["🗝️", "Llave"],
+              linterna: ["🔦", "Linterna"],
+              manzana: ["🍎", "Manzana"],
+              pala: ["⛏️", "Pala"],
+              moneda: ["🪙", "Moneda"],
+              gema: ["💎", "Gema"],
+              espada: ["🗡️", "Espada"],
+              pocion: ["🧪", "Poción"],
+              mapa: ["🗺️", "Mapa"],
+              escudo: ["🛡️", "Escudo"],
+            };
+
+            const missions = [
+              {
+                title: "El puente roto",
+                story:
+                  "El río bloquea el camino. Recoge madera y cuerda. Úsalas en ese orden para reparar el puente. El hongo no te servirá.",
+                items: ["madera", "cuerda", "piedra", "hongo"],
+                start: [],
+                type: "seq",
+                need: ["madera", "cuerda"],
+                map: "forest",
+              },
+              {
+                title: "La puerta cerrada",
+                story:
+                  "Una puerta de piedra protege el templo. Explora el claro, encuentra la llave y úsala para abrirla.",
+                items: ["linterna", "manzana", "pala", "llave", "moneda"],
+                start: [],
+                type: "seq",
+                need: ["llave"],
+                map: "temple",
+              },
+              {
+                title: "Mochila llena",
+                story:
+                  "La gema está cerca del cofre, pero tu mochila ya está llena. Suelta algo, recoge la gema y úsala en el altar.",
+                items: ["gema"],
+                start: ["manzana", "piedra", "cuerda", "linterna", "moneda"],
+                type: "seq",
+                need: ["gema"],
+                map: "cave",
+              },
+              {
+                title: "El mercader",
+                story:
+                  "El mercader necesita una espada, una poción y un mapa. Reúne los tres objetos y entrégaselos.",
+                items: [
+                  "espada",
+                  "pocion",
+                  "mapa",
+                  "escudo",
+                  "hongo",
+                  "piedra",
+                ],
+                start: [],
+                type: "have",
+                need: ["espada", "pocion", "mapa"],
+                map: "market",
+              },
+              {
+                title: "El jefe del templo",
+                story:
+                  "El guardián ataca en tres tiempos: cúbrete con el escudo, golpea con la espada y termina con la poción. ¡Respeta el orden!",
+                items: ["escudo", "espada", "pocion", "mapa", "hongo"],
+                start: [],
+                type: "seq",
+                need: ["escudo", "espada", "pocion"],
+                penalty: true,
+                map: "boss",
+              },
+            ];
+
+            let mi = 0;
+            let inv = [];
+            let ground = [];
+            let selected = -1;
+            let step = 0;
+            let lives = 3;
+            let score = 0;
+            let done = false;
+
+            let player = { x: 90, y: 390, dir: 1, walk: 0 };
+            let keys = {};
+            let last = 0;
+            let near = null;
+
+            const positions = [
+              [530, 365],
+              [650, 240],
+              [350, 160],
+              [180, 300],
+              [690, 410],
+              [410, 390],
+            ];
+
+            const obstacles = [
+              { x: 0, y: 0, w: 800, h: 22 },
+              { x: 0, y: 478, w: 800, h: 22 },
+              { x: 0, y: 0, w: 22, h: 500 },
+              { x: 778, y: 0, w: 22, h: 500 },
+              { x: 250, y: 60, w: 85, h: 75 },
+              { x: 460, y: 65, w: 105, h: 65 },
+              { x: 270, y: 350, w: 90, h: 50 },
+              { x: 570, y: 300, w: 70, h: 80 },
+            ];
+
+            function say(text, type = "", code = "") {
+              const el = $("message");
+              el.textContent = text;
+              el.className = "status " + type;
+
+              if (code) {
+                $("code").textContent =
+                  code + "\n// inventario = " + JSON.stringify(inv);
+              }
+            }
+
+            function load(i) {
+              mi = i;
+
+              let m = missions[i];
+
+              inv = [...m.start];
+
+              ground = m.items.map((name, j) => ({
+                name,
+                x: positions[j][0],
+                y: positions[j][1],
+                id: j,
+              }));
+
+              selected = -1;
+              step = 0;
+              lives = 3;
+              done = false;
+
+              player = { x: 85, y: 410, dir: 1, walk: 0 };
+
+              $("sceneTitle").textContent = [
+                "El bosque del puente",
+                "Ruinas del templo",
+                "La cueva de cristal",
+                "Mercado del valle",
+                "Santuario del guardián",
+              ][i];
+
+              $("missionName").textContent = m.title;
+              $("missionText").textContent = m.story;
+
+              $("overlay").classList.remove("show");
+
+              say(
+                "Nueva misión. Explora el escenario y recoge los objetos que necesitas.",
+              );
+
+              renderUI();
+              draw();
+            }
+
+            function renderUI() {
+              $("missionCount").textContent = `MISIÓN ${mi + 1}/5`;
+              $("lifeCount").textContent =
+                "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+
+              $("scoreCount").textContent = `⭐ ${score} puntos`;
+              $("capacity").textContent = `(${inv.length}/${MAX})`;
+
+              $("slots").innerHTML = "";
+
+              for (let i = 0; i < MAX; i++) {
+                let b = document.createElement("button");
+
+                b.className =
+                  "slot " +
+                  (i === selected ? "selected" : "") +
+                  (inv[i] ? "" : " empty");
+
+                b.innerHTML = inv[i]
+                  ? `<span class="emoji">${ITEMS[inv[i]][0]}</span><small>${ITEMS[inv[i]][1]}</small>`
+                  : `<span class="emoji">＋</span><small>Vacío</small>`;
+
+                b.onclick = () => {
+                  selected = inv[i] ? i : -1;
+                  renderUI();
+                };
+
+                $("slots").appendChild(b);
+              }
+
+              $("drop").disabled = selected < 0 || done;
+              $("use").disabled = selected < 0 || done;
+              $("useQuick").disabled = selected < 0 || done;
+
+              let m = missions[mi];
+
+              let p =
+                m.type === "have"
+                  ? m.need.filter((n) => inv.includes(n)).length / m.need.length
+                  : step / m.need.length;
+
+              $("progressBar").style.width = p * 100 + "%";
+
+              $("objective").textContent =
+                m.type === "have"
+                  ? `Objetos reunidos: ${m.need.filter((n) => inv.includes(n)).length}/${m.need.length}`
+                  : `Paso ${Math.min(step + 1, m.need.length)} de ${m.need.length}: ${m.need[step] ? ITEMS[m.need[step]][1] : "¡completado!"}`;
+
+              $("code").textContent = "inventario = " + JSON.stringify(inv);
+            }
+
+            function nearest() {
+              let best = null;
+              let dmin = 54;
+
+              for (const o of ground) {
+                let d = Math.hypot(player.x - o.x, player.y - o.y);
+
+                if (d < dmin) {
+                  dmin = d;
+                  best = o;
+                }
+              }
+
+              return best;
+            }
+
+            function collect() {
+              if (done) return;
+
+              let o = nearest();
+
+              if (!o) {
+                say(
+                  "No hay objetos suficientemente cerca. Camina hasta uno para recogerlo.",
+                );
+                return;
+              }
+
+              if (inv.length >= MAX) {
+                say(
+                  "¡Mochila llena! Selecciona un objeto y suéltalo para hacer espacio.",
+                  "bad",
+                  "len(inventario) == 5",
+                );
+                return;
+              }
+
+              ground = ground.filter((x) => x !== o);
+              inv.push(o.name);
+              selected = inv.length - 1;
+
+              say(
+                `¡Recogiste ${ITEMS[o.name][1]}! Se añadió a tu mochila.`,
+                "good",
+                `inventario.append("${o.name}")`,
+              );
+
+              renderUI();
+              draw();
+            }
+
+            function drop() {
+              if (selected < 0 || done) return;
+
+              let n = inv.splice(selected, 1)[0];
+
+              ground.push({
+                name: n,
+                x: Math.min(740, player.x + 35),
+                y: player.y,
+                id: Date.now(),
+              });
+
+              selected = -1;
+
+              say(
+                `Soltaste ${ITEMS[n][1]} en el suelo.`,
+                "",
+                "inventario.pop()",
+              );
+
+              renderUI();
+              draw();
+            }
+
+            function use() {
+              if (selected < 0 || done) return;
+
+              let m = missions[mi];
+              let n = inv[selected];
+
+              if (m.type === "have") {
+                say(
+                  "Esta misión requiere reunir los objetos y pulsar “Entregar al mercader”.",
+                );
+                return;
+              }
+
+              if (n === m.need[step]) {
+                inv.splice(selected, 1);
+                step++;
+                selected = -1;
+
+                say(
+                  `¡Correcto! Usaste ${ITEMS[n][1]}.`,
+                  "good",
+                  `inventario.remove("${n}")`,
+                );
+
+                renderUI();
+
+                if (step === m.need.length) win();
+              } else if (m.penalty) {
+                lives--;
+
+                say(
+                  "¡Cuidado! Ese no era el objeto correcto. Perdiste una vida.",
+                  "bad",
+                );
+
+                renderUI();
+
+                if (lives <= 0) lose();
+              } else {
+                say(
+                  `${ITEMS[n][1]} no sirve en este momento. Revisa el objetivo de la misión.`,
+                  "bad",
+                );
+              }
+
+              draw();
+            }
+
+            function deliver() {
+              let m = missions[mi];
+
+              let missing = m.need.filter((n) => !inv.includes(n));
+
+              if (missing.length) {
+                say(
+                  "Todavía te falta: " +
+                    missing.map((n) => ITEMS[n][1]).join(", "),
+                  "bad",
+                );
+                return;
+              }
+
+              inv = inv.filter((n) => !m.need.includes(n));
+
+              say(
+                "¡El mercader acepta el trato! Entregaste los tres objetos.",
+                "good",
+              );
+
+              renderUI();
+              win();
+            }
+
+            function win() {
+              done = true;
+
+              score += 100 + (MAX - inv.length) * 10;
+
+              renderUI();
+
+              $("modalTitle").textContent =
+                mi === 4 ? "🏆 ¡Aventura completada!" : "✨ ¡Misión superada!";
+
+              $("modalText").textContent =
+                `Ganaste ${100 + (MAX - inv.length) * 10} puntos. ` +
+                (mi === 4
+                  ? "Has completado todas las misiones."
+                  : "Prepárate para el siguiente desafío.");
+
+              $("continue").textContent =
+                mi === 4 ? "Jugar de nuevo" : "Siguiente misión";
+
+              $("continue").onclick = () => {
+                if (mi === 4) {
+                  score = 0;
+                  load(0);
+                } else {
+                  load(mi + 1);
+                }
+              };
+
+              $("overlay").classList.add("show");
+            }
+
+            function lose() {
+              done = true;
+
+              $("modalTitle").textContent = "💥 El guardián te derrotó";
+
+              $("modalText").textContent =
+                "Perdiste todas tus vidas. Repasa el orden correcto e inténtalo de nuevo.";
+
+              $("continue").textContent = "Reintentar misión";
+
+              $("continue").onclick = () => load(mi);
+
+              $("overlay").classList.add("show");
+            }
+
+            function collide(x, y) {
+              return obstacles.some(
+                (o) =>
+                  x > o.x - 13 &&
+                  x < o.x + o.w + 13 &&
+                  y > o.y - 13 &&
+                  y < o.y + o.h + 13,
+              );
+            }
+
+            function update(dt) {
+              if (done) return;
+
+              let dx = 0;
+              let dy = 0;
+
+              if (keys.ArrowLeft || keys.a) dx--;
+              if (keys.ArrowRight || keys.d) dx++;
+              if (keys.ArrowUp || keys.w) dy--;
+              if (keys.ArrowDown || keys.s) dy++;
+
+              if (dx || dy) {
+                let len = Math.hypot(dx, dy);
+
+                dx /= len;
+                dy /= len;
+
+                let speed = 190 * dt;
+
+                let nx = player.x + dx * speed;
+                let ny = player.y + dy * speed;
+
+                if (!collide(nx, player.y)) player.x = nx;
+                if (!collide(player.x, ny)) player.y = ny;
+
+                player.dir = dx < 0 ? -1 : dx > 0 ? 1 : player.dir;
+
+                player.walk += dt * 12;
+              }
+
+              near = nearest();
+
+              $("nearby").textContent = near
+                ? `Pulsa E para recoger ${ITEMS[near.name][1]}.`
+                : "Explora el mapa y acércate a un objeto.";
+
+              $("interact").disabled = !near;
+            }
+
+            function roundRect(x, y, w, h, r, color) {
+              ctx.fillStyle = color;
+
+              ctx.beginPath();
+              ctx.roundRect(x, y, w, h, r);
+              ctx.fill();
+            }
+
+            function draw() {
+              ctx.clearRect(0, 0, W, H);
+
+              ctx.fillStyle = "#8dbb7d";
+              ctx.fillRect(0, 0, W, H);
+
+              // Caminos
+              ctx.fillStyle = "#d7c18a";
+
+              ctx.beginPath();
+              ctx.moveTo(20, 370);
+              ctx.quadraticCurveTo(260, 430, 390, 270);
+              ctx.quadraticCurveTo(570, 100, 780, 180);
+              ctx.lineTo(780, 245);
+              ctx.quadraticCurveTo(560, 170, 420, 315);
+              ctx.quadraticCurveTo(240, 470, 20, 430);
+              ctx.fill();
+
+              // Río y puente
+              if (mi === 0) {
+                ctx.fillStyle = "#4c9db1";
+                ctx.fillRect(360, 20, 65, 460);
+
+                ctx.fillStyle = "#b68a57";
+                ctx.fillRect(350, 235, 85, 50);
+
+                ctx.strokeStyle = "#704d36";
+                ctx.lineWidth = 5;
+
+                for (let y = 240; y < 285; y += 13) {
+                  ctx.beginPath();
+                  ctx.moveTo(352, y);
+                  ctx.lineTo(433, y);
+                  ctx.stroke();
+                }
+              }
+
+              // Vegetación
+              for (let i = 0; i < 38; i++) {
+                let x = ((i * 137 + 37) % 780) + 10;
+                let y = ((i * 83 + 19) % 470) + 15;
+
+                ctx.fillStyle = i % 2 ? "#79aa70" : "#a2c98b";
+
+                ctx.beginPath();
+                ctx.arc(x, y, 2 + (i % 3), 0, Math.PI * 2);
+                ctx.fill();
+              }
+
+              // Árboles y rocas
+              obstacles.slice(4).forEach((o, i) => {
+                if (i === 2 || i === 3) {
+                  roundRect(o.x, o.y, o.w, o.h, 12, "#777c70");
+                  roundRect(o.x + 8, o.y + 7, o.w - 16, o.h - 14, 9, "#999c83");
+                } else {
+                  ctx.fillStyle = "#704c38";
+                  ctx.fillRect(o.x + o.w / 2 - 7, o.y + o.h - 10, 14, 24);
+
+                  ctx.fillStyle = i % 2 ? "#286b50" : "#347c55";
+
+                  ctx.beginPath();
+                  ctx.arc(
+                    o.x + o.w / 2,
+                    o.y + o.h / 2,
+                    Math.max(o.w, o.h) * 0.57,
+                    0,
+                    Math.PI * 2,
+                  );
+                  ctx.fill();
+
+                  ctx.fillStyle = "#5b9b65";
+
+                  ctx.beginPath();
+                  ctx.arc(
+                    o.x + o.w / 2 - 14,
+                    o.y + o.h / 2 - 12,
+                    18,
+                    0,
+                    Math.PI * 2,
+                  );
+                  ctx.fill();
+                }
+              });
+
+              // Destino
+              ctx.fillStyle = "#f5d76e";
+
+              ctx.beginPath();
+              ctx.arc(735, 80, 22, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = "#795b2d";
+              ctx.font = "bold 22px sans-serif";
+              ctx.textAlign = "center";
+
+              ctx.fillText(mi === 3 ? "🧔" : mi === 4 ? "🐉" : "🚪", 735, 88);
+
+              // Objetos recogibles
+              ground.forEach((o) => {
+                ctx.fillStyle = "#193d35aa";
+
+                ctx.beginPath();
+                ctx.ellipse(o.x, o.y + 12, 18, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = "30px sans-serif";
+                ctx.textAlign = "center";
+
+                ctx.fillText(ITEMS[o.name][0], o.x, o.y + 7);
+
+                if (Math.hypot(player.x - o.x, player.y - o.y) < 54) {
+                  ctx.strokeStyle = "#ffe18a";
+                  ctx.lineWidth = 3;
+
+                  ctx.beginPath();
+                  ctx.arc(o.x, o.y - 5, 23, 0, Math.PI * 2);
+                  ctx.stroke();
+                }
+              });
+
+              // Sombra del personaje
+              ctx.fillStyle = "#23453d77";
+
+              ctx.beginPath();
+              ctx.ellipse(player.x, player.y + 15, 17, 7, 0, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Personaje
+              let bob = Math.sin(player.walk) * 2;
+
+              ctx.save();
+
+              ctx.translate(player.x, player.y + bob);
+              ctx.scale(player.dir, 1);
+
+              // Piernas
+              ctx.fillStyle = "#273b52";
+              ctx.fillRect(-10, 3, 8, 15);
+              ctx.fillRect(3, 3, 8, 15);
+
+              // Botas
+              ctx.fillStyle = "#d98b54";
+              ctx.fillRect(-11, 15, 10, 5);
+              ctx.fillRect(3, 15, 10, 5);
+
+              // Cuerpo
+              ctx.fillStyle = "#2877a5";
+              ctx.fillRect(-13, -13, 26, 22);
+
+              // Cabeza
+              ctx.fillStyle = "#e6ad7c";
+              ctx.fillRect(-10, -31, 20, 20);
+
+              // Cabello
+              ctx.fillStyle = "#49352b";
+              ctx.fillRect(-11, -34, 22, 8);
+              ctx.fillRect(-13, -28, 5, 10);
+
+              // Ojo
+              ctx.fillStyle = "#172a35";
+              ctx.fillRect(2, -24, 3, 3);
+
+              // Mochila
+              ctx.fillStyle = "#f4d36b";
+              ctx.fillRect(-15, -9, 5, 14);
+
+              ctx.restore();
+
+              // Etiqueta
+              ctx.fillStyle = "#173d36";
+              ctx.font = "bold 13px Nunito";
+              ctx.textAlign = "left";
+              ctx.fillText("EXPLORADOR", 34, 45);
+            }
+
+            function frame(t) {
+              let dt = Math.min((t - last) / 1000, 0.04) || 0;
+
+              last = t;
+
+              update(dt);
+              draw();
+
+              requestAnimationFrame(frame);
+            }
+
+            // Controles de teclado
+            window.addEventListener("keydown", (e) => {
+              let k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+              if (
+                [
+                  "ArrowUp",
+                  "ArrowDown",
+                  "ArrowLeft",
+                  "ArrowRight",
+                  " ",
+                ].includes(e.key)
+              ) {
+                e.preventDefault();
+              }
+
+              keys[k] = true;
+
+              if (k === "e") collect();
+              if (e.key === " ") use();
+            });
+
+            window.addEventListener("keyup", (e) => {
+              let k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+              keys[k] = false;
+            });
+
+            // Controles táctiles
+            document.querySelectorAll("[data-key]").forEach((b) => {
+              let k = b.dataset.key;
+
+              b.addEventListener("pointerdown", (e) => {
+                e.preventDefault();
+                keys[k] = true;
+              });
+
+              ["pointerup", "pointerleave", "pointercancel"].forEach((ev) =>
+                b.addEventListener(ev, () => (keys[k] = false)),
+              );
+            });
+
+            // Botones
+            $("interact").onclick = collect;
+            $("use").onclick = use;
+            $("useQuick").onclick = use;
+            $("drop").onclick = drop;
+
+            // Iniciar juego
+            load(0);
+            requestAnimationFrame(frame);
+          })();
+        </script>
+      </body>
+    </html>
+  </body>
+</html>
